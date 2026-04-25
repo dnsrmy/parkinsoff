@@ -1,72 +1,112 @@
-# ParkinsonsShortcut
+# Parkinsoff
 
-AI-powered early awareness assistant for Parkinson's disease prodromal signals.
+**Parkinson's Early Signal Awareness — Screening Shortcut**
 
-> **Not a medical tool.** For awareness only. Always consult a healthcare professional.
-
-Built for Tech Roulette / Build with AI — IE University x GDG Hackathon (April 2026).
+Built for the **Google Build with AI Hackathon 2026** — Tech Roulette Challenge
+IE University × GDG Madrid — April 2026
 
 ---
 
-## Phase 1 — Local Prototype (Mocked AI)
+## Live Demo
 
-### Quickstart
+**App:** https://parkinsoff-frontend-652530535904.europe-west1.run.app
+
+**GitHub:** https://github.com/dnsrmy/Parkinsoff
+
+---
+
+## How to run locally
+
+### Prerequisites
+- Node.js 18+
+- A Google Cloud project with Vertex AI and Speech-to-Text APIs enabled (not needed with `MOCK_AI=true`)
+
+### Backend
 
 ```bash
-# 1. Install frontend dependencies
-cd frontend && npm install
-
-# 2. Install backend dependencies
-cd ../backend && npm install
-
-# 3. Create backend .env
+cd backend
+npm install
 cp .env.example .env
-# .env already has MOCK_AI=true
+# Edit .env — set MOCK_AI=true for local testing without API keys
+node src/index.js
+```
 
-# 4. Start backend (port 3001)
+### Frontend
+
+```bash
+cd frontend
+npm install --legacy-peer-deps
+cp .env.example .env
+# Edit .env — set VITE_BACKEND_URL=http://localhost:3001
 npm run dev
-
-# 5. In a new terminal, start frontend (port 5173)
-cd ../frontend && npm run dev
 ```
 
 Open http://localhost:5173
 
 ---
 
-## Architecture
+## What it does
 
-```
-frontend (Vite + React)          backend (Express)
-  ├── SymptomInput.jsx             ├── /api/analyze  (POST)
-  │     └── signalDetector.js      │     └── geminiService.js
-  ├── ResultsPanel.jsx             └── /health       (GET)
-  ├── XPTracker.jsx
-  └── DisclaimerBanner.jsx
-```
+Parkinsoff is a multimodal AI-powered screening shortcut that helps users identify early warning signals associated with Parkinson's disease — in under 10 minutes, from any device, without specialist equipment. It is **not a diagnostic tool** — it provides personal awareness, a structured clinical-style report, and a shortcut to knowing when to consult a healthcare professional.
 
-### Signal Detection (client-side, real-time)
+### 7 Tests
 
-Runs locally on every keystroke via `detectSignals()`. No network call needed for chip display.
+| Test | Type | Signal measured |
+|------|------|----------------|
+| Sustained vowel | Voice — **strong** | Jitter, shimmer, HNR via Gemini AI |
+| Finger tapping | Motor — **strong** | Bradykinesia, asymmetry |
+| Rest tremor | Tremor — **strong** | 3–7 Hz accelerometer analysis |
+| Pa-Ta-Ka | Voice — supporting | Speech motor control |
+| Reading passage | Voice — supporting | Connected speech rate |
+| Spiral drawing | Motor — supporting | Velocity CV, path deviation |
+| Reaction time | Cognitive — supporting | Mean RT, variability |
 
-| Signal | Category | Weight |
-|---|---|---|
-| tremor | motor | 3 |
-| smell_loss | prodromal | 3 |
-| sleep_rbd | prodromal | 3 |
-| constipation | prodromal | 2 |
-| small_writing | motor | 2 |
-| slowness | motor | 2 |
-| mood | non-motor | 1 |
-| fatigue | non-motor | 1 |
+### Scoring logic
 
-Severity: score ≥ 7 = **watch**, ≥ 4 = **medium**, ≥ 1 = **low**
+- **Strong tests** (voice, tapping, tremor) drive the overall conclusion
+- **Supporting tests** add context but do not change the result tier
+- Rule-based reasoning — not score averaging
+- Session context (sleep, caffeine, environment) applies as a confidence caveat only
 
 ---
 
-## Phase 2 (upcoming)
+## Tech Stack
 
-- Replace `geminiService.js` mock with real Gemini / Vertex AI call
-- Add Google Fit integration for activity data
-- Camera-based tremor detection (MediaPipe Hands)
-- Voice journaling via Web Speech API
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18 + Vite |
+| Backend | Node.js + Express |
+| AI | Google Vertex AI (Gemini 1.5 Pro) |
+| Speech | Google Cloud Speech-to-Text |
+| Deployment | Google Cloud Run (europe-west1) |
+| Scoring | Research-based rule logic (UCI Parkinson's dataset) |
+
+---
+
+## Architecture
+
+```
+Browser (React SPA)
+    │
+    ▼
+Cloud Run — Frontend (nginx, port 8080)
+    │  /api/* proxied
+    ▼
+Cloud Run — Backend (Node.js/Express, port 3001)
+    ├──▶ Vertex AI — Gemini 1.5 Pro  (voice analysis, explanations)
+    └──▶ Google Cloud Speech-to-Text  (transcription)
+```
+
+API keys are stored server-side only. The frontend never holds credentials.
+
+---
+
+## Medical Disclaimer
+
+This application does **not** diagnose Parkinson's disease or any other condition. Results are for personal awareness only. Always consult a qualified healthcare professional.
+
+---
+
+## Dataset Reference
+
+Voice scoring thresholds derived from the UCI Oxford Parkinson's dataset (Little et al. 2008, n=195 recordings). All other test thresholds from published research: MDS-UPDRS III, Baken & Orlikoff 2000, Pullman 1998.

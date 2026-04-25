@@ -1,3 +1,6 @@
+Live app: https://parkinsoff-frontend-652530535904.europe-west1.run.app
+GitHub: https://github.com/dnsrmy/Parkinsoff
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
